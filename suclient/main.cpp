@@ -1,5 +1,7 @@
-#include <irrlicht/irrlicht.h>
 #include <iostream>
+#include <irrlicht/irrlicht.h>
+#include "player.pb.h"
+
 #define PI 3.14159265
 
 using namespace irr;
