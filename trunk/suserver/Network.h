@@ -16,13 +16,15 @@
 using namespace irr::core;
 class Network {
 public:
-  Network(int p, int m);
+  Network(int, int);
+  Network(char*, int);
   ~Network();
   int Startup();
   void Wait(void);
   int Receive(int, char*);
   
  private:
+  std::string address;
   const int port, max;
   int fd;
   list<int> fdnew;
