@@ -8,6 +8,10 @@ return 0;
 Network::Network(int p, int m) : port(p), max(m) {
 }
 
+Network::Network(char *a, int p) : port(p), max(0) {
+  address = a;
+}
+
 Network::~Network() {			       
   list<int>::Iterator it = fdnew.begin();
   
@@ -19,7 +23,7 @@ Network::~Network() {
   close(fd);
 }
 
-int Network::Startup() {
+int Network::Startup(void) {
 
 
   addr.sin_family = AF_INET;
