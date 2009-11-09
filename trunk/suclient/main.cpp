@@ -56,7 +56,7 @@ int main() {
   
   MyEventReceiver receiver;
   
-  IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<s32>(1024, 768), 16, false, false, false, &receiver);
+  IrrlichtDevice *device = createDevice(video::EDT_OPENGL, core::dimension2d<u32>(800, 600), 16, false, false, false, &receiver);
   
   SKeyMap keyMap[9];
   keyMap[0].Action = EKA_MOVE_FORWARD;
@@ -90,9 +90,9 @@ int main() {
   video::IVideoDriver* driver = device->getVideoDriver();
   scene::ISceneManager* smgr = device->getSceneManager();
   
-  device->getFileSystem()->addZipFileArchive("./map-20kdm2.pk3");
+  device->getFileSystem()->addZipFileArchive("./algumlugar.pk3");
   
-  scene::IAnimatedMesh* q3levelmesh = smgr->getMesh("20kdm2.bsp");
+  scene::IAnimatedMesh* q3levelmesh = smgr->getMesh("algumlugar.bsp");
   scene::ISceneNode* q3node = 0;
   
   if (q3levelmesh)
@@ -102,7 +102,7 @@ int main() {
   
   if (q3node)
     {
-      q3node->setPosition(core::vector3df(-1350,-130,-1400));
+        q3node->setPosition(core::vector3df(0,0,0));
       
       selector = smgr->createOctTreeTriangleSelector(q3levelmesh->getMesh(0), q3node, 128);
       q3node->setTriangleSelector(selector);
@@ -111,7 +111,7 @@ int main() {
   
   scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS(0, 100.0f, .3f, -1, keyMap, 9, false, 2.0f);
   
-  camera->setPosition(core::vector3df(-100,50,-150));
+  camera->setPosition(core::vector3df(0,50,0));
   
   device->getCursorControl()->setVisible(false);
   
@@ -126,11 +126,9 @@ int main() {
       camera->addAnimator(anim);
       anim->drop();
     }
-  scene::ISceneNode* selectedSceneNode = 0;
-  scene::ISceneNode* lastSelectedSceneNode = 0;
   
-  
-    scene::IAnimatedMesh* sydney_mesh = smgr->getMesh("./sydney.md2");
+  //  device->getFileSystem()->addZipFileArchive("./ak47.zip");  
+    scene::IAnimatedMesh* sydney_mesh = smgr->getMesh("aksimple222.b3d");
   if (!sydney_mesh)
     return 1;
   scene::IAnimatedMeshSceneNode* sydney_node = smgr->addAnimatedMeshSceneNode(sydney_mesh);
@@ -139,11 +137,23 @@ int main() {
   if (sydney_node)
     {
       sydney_node->setMaterialFlag(video::EMF_LIGHTING, false);
-      sydney_node->setMD2Animation(scene::EMAT_STAND);
+
+      //      sydney_node->setMD2Animation(scene::EMAT_STAND);
       //sydney_node->setFrameLoop(0, 0);
       //      sydney_node->setAnimationSpeed(15);
-		
-      sydney_node->setMaterialTexture( 0, driver->getTexture("./sydney.bmp") );
+
+      sydney_node->setMaterialTexture(0, driver->getTexture("Untitled.png") );
+      //      sydney_node->setMaterialTexture(1, driver->getTexture("skin_hands.jpg") );
+      //      sydney_node->setMaterialTexture(0, texture);
+      
+      sydney_node->setScale(core::vector3df(10.0f, 10.0f, 10.0f));
+      sydney_node->setPosition(core::vector3df(0, 0, 0));
+      
+
+
+	    driver->endScene();	      
+
+      
     }
   
   
@@ -156,28 +166,6 @@ int main() {
 	
 	smgr->drawAll();
 	
-	core::line3d<f32> line;
-	line.start = camera->getPosition();
-	line.end = line.start + (camera->getTarget() - line.start).normalize() * 1000.0f;
-	
-	core::vector3df intersection;
-	core::triangle3df tri;
-	
-	if (smgr->getSceneCollisionManager()->getCollisionPoint(line, selector, intersection, tri))
-	  {
-	    driver->setTransform(video::ETS_WORLD, core::matrix4());
-	    //	    driver->setMaterial(material);
-	    //	    driver->draw3DTriangle(tri, video::SColor(0,255,0,0));
-	  }
-	selectedSceneNode = smgr->getSceneCollisionManager()->getSceneNodeFromCameraBB(camera);
-	
-	if (lastSelectedSceneNode)
-	  lastSelectedSceneNode->setMaterialFlag(video::EMF_LIGHTING, true);
-	
-	if (selectedSceneNode)
-	  selectedSceneNode->setMaterialFlag(video::EMF_LIGHTING, false);
-	
-	lastSelectedSceneNode = selectedSceneNode;
  
 
 	if(receiver.IsKeyDown(irr::KEY_LSHIFT) || receiver.IsMouseDown(irr::EMIE_LMOUSE_PRESSED_DOWN)) {
@@ -187,17 +175,19 @@ int main() {
 	  
   	}
 
-	if(receiver.IsKeyDown(irr::KEY_KEY_W) || receiver.IsKeyDown(irr::KEY_KEY_S))
+	/*if(receiver.IsKeyDown(irr::KEY_KEY_W) || receiver.IsKeyDown(irr::KEY_KEY_S))
 	  sydney_node->setMD2Animation(scene::EMAT_RUN);
 	else
 	  sydney_node->setMD2Animation(scene::EMAT_STAND);
-
+	*/	
 	core::vector3df cposition = camera->getPosition(), crotation = camera->getRotation(),srotation = sydney_node->getRotation();
 
-	sydney_node->setPosition(core::vector3df(cposition.X, cposition.Y-28, cposition.Z));
-	driver->endScene();
+	sydney_node->setPosition(core::vector3df(cposition.X, cposition.Y-30, cposition.Z));
 
-		sydney_node->setRotation(core::vector3df(srotation.X, crotation.Y-90, srotation.Z));
+
+		sydney_node->setRotation(core::vector3df(-crotation.X, crotation.Y+180, crotation.Z));
+	
+	driver->endScene();
 
 	int fps = driver->getFPS();
 	

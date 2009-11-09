@@ -1,10 +1,10 @@
 CC	= g++
 
-CFILES  = main.cpp player.pb.cc
+CFILES  = main.cpp Network.cpp Thread.cpp
 
 EXEC 	= main
 
-OBJS	= main.o player.pb.o
+OBJS	= main.o Network.o Thread.o
 
 LINKER = -lGL -lXxf86vm -lXext -lX11 -lpthread
 
@@ -18,7 +18,7 @@ cfiles: $(CFILES)
 	$(CC) -c $(CFILES)
 
 compile: $(OBJS)
-	$(CC) -o $(EXEC) $(CFILES) $(LIB) $(INCLUDE) $(LINKER)
+	$(CC) -g -o $(EXEC) $(CFILES) $(LIB) $(INCLUDE) $(LINKER)
 
 clean:
 	rm -f $(OBJS)
