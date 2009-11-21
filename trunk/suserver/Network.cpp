@@ -44,17 +44,33 @@ int Network::Startup(void) {
 }
 
 void Network::Wait(void) {
-  int fdtmp;
-  std::cout << "Funcionando! " << max << " " << port;
-  
-  while(((fdtmp = accept(fd, (struct sockaddr *)&addr,&size)))<0)usleep(1);
-  
-  fdnew.push_back(fdtmp);
+  while(fd) {
+    int fdtmp;
+    std::cout << "Funcionando! " << max << " " << port;
+    
+    while(((fdtmp = accept(fd, (struct sockaddr *)&addr,&size)))<0)usleep(1);
+    
+    fdnew.push_back(fdtmp);
+  }
+}
+
+int Network::getSize(void) {
+  return fdnew.getSize();
 }
 
 
-int Network::Receive(int id, char *buffer) {
-  //int p = fdnew[0];
+int Network::Receive(int id, stringc *buffer) {
+  char btmp[512];
+  list<int>::Iterator p = fdnew.begin();
+  p+=id;
+  while(recv(*p, btmp, 512, 0) > 0) {
+    if(btmp[0] == EOT)  
+      break;
+    
+    buffer->append(btmp);
+    memset(btmp, 0, 512);
+  }
+  
 }
 
 
