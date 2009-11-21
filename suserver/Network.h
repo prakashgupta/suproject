@@ -1,9 +1,11 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include<iterator>
-#include <list>
-#include<irrlicht/irrlicht.h>
+//#include<iterator>
+//#include <list>
+#include <irrlicht/irrlicht.h>
+#include <irrlicht/irrString.h>
+#include <irrlicht/irrList.h>
 #include <iostream>
 #include <string.h>
 #include <sys/socket.h>
@@ -11,17 +13,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "Thread.h"
-
+#define EOT 0x04
 //using namespace std;
 using namespace irr::core;
 class Network {
 public:
   Network(int, int);
-  Network(char*, int);
+  Network(char *, int);
   ~Network();
   int Startup();
   void Wait(void);
-  int Receive(int, char*);
+  int getSize(void);
+  int Receive(int, stringc *);
   
  private:
   std::string address;

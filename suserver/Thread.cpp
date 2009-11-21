@@ -13,7 +13,7 @@ int Thread::Start(void * arg)
    Arg = arg; // store user data
    int code = pthread_create(&(pid), NULL, &Thread::EntryPoint, this);
    return code;
-}
+ }
 
 int Thread::Run()
 {
