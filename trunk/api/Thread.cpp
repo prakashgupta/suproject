@@ -2,15 +2,19 @@
 #include "Network.h"
 
 
-Thread::Thread() {}
+Thread::Thread() {
+  on = 0;
+}
 
 Thread::~Thread() {
+  if(on)
   pthread_cancel(pid);
 }
 
 int Thread::Start(void * arg)
 {
    Arg = arg; // store user data
+   on=1;
    int code = pthread_create(&(pid), NULL, &Thread::EntryPoint, this);
    return code;
  }

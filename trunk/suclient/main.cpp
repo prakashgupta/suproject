@@ -127,7 +127,7 @@ int main() {
       anim->drop();
     }
   
-  //  device->getFileSystem()->addZipFileArchive("./ak47.zip");  
+  device->getFileSystem()->addZipFileArchive("./ak47.zip");  
     scene::IAnimatedMesh* sydney_mesh = smgr->getMesh("aksimple222.b3d");
   if (!sydney_mesh)
     return 1;
@@ -142,7 +142,7 @@ int main() {
       //sydney_node->setFrameLoop(0, 0);
       //      sydney_node->setAnimationSpeed(15);
 
-      sydney_node->setMaterialTexture(0, driver->getTexture("Untitled.png") );
+      sydney_node->setMaterialTexture(0, driver->getTexture("ak47.jpg") );
       //      sydney_node->setMaterialTexture(1, driver->getTexture("skin_hands.jpg") );
       //      sydney_node->setMaterialTexture(0, texture);
       
@@ -182,10 +182,10 @@ int main() {
 	*/	
 	core::vector3df cposition = camera->getPosition(), crotation = camera->getRotation(),srotation = sydney_node->getRotation();
 
-	sydney_node->setPosition(core::vector3df(cposition.X, cposition.Y-30, cposition.Z));
-
-
-		sydney_node->setRotation(core::vector3df(-crotation.X, crotation.Y+180, crotation.Z));
+	//sydney_node->setPosition(core::vector3df(cposition.X, cposition.Y-30, cposition.Z));
+	
+		
+	//sydney_node->setRotation(core::vector3df(-crotation.X, crotation.Y+180, crotation.Z));
 	
 	driver->endScene();
 
