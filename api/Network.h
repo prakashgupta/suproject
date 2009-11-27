@@ -12,26 +12,34 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #include "Thread.h"
-#define EOT 0x04
+#define EOT 'b'
 //using namespace std;
 using namespace irr::core;
 class Network {
 public:
-  Network(int, int);
-  Network(char *, int);
+  //  Network(int, int);
+  //  Network(char *, int);
   ~Network();
-  int Startup();
+  int Startup(int, int);
+  int Startup(const char *, int);
+  int Close(void);
   void Wait(void);
   int getSize(void);
   int Receive(int, stringc *);
-  
+  int Receive(stringc *);
+  int Send(int, stringc *);
+  int SendAll(stringc *);
+  int Send(stringc *);
  private:
-  std::string address;
-  const int port, max;
+  int server;
+  stringc address;
   int fd;
+  int port, max;
   list<int> fdnew;
   socklen_t size;
+  struct hostent *he;
   struct sockaddr_in addr;
   ThNetwork NetworkThread;
 };

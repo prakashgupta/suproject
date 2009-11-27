@@ -18,9 +18,8 @@ protected:
   int Run();
   virtual void Setup();
   virtual void Execute();
-  /*      void * Arg() const {return Arg_;}
-	  void Arg(void* a){Arg_ = a;}*/
-private:
+ private:
+  int on;
   pthread_t pid;
   static void *EntryPoint(void *);
 };

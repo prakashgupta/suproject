@@ -1,6 +1,6 @@
 CC	= g++
 
-CFILES  = main.cpp Network.cpp Thread.cpp
+CFILES  = main.cpp ../api/Network.cpp ../api/Thread.cpp
 
 EXEC 	= main
 
