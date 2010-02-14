@@ -1,9 +1,0 @@
-message Player {
-  required int32  id = 1;
-  required string nick = 2;
-  optional bytes  ipaddress = 3;
-  optional bytes  position = 4;
-  optional bytes  rotation = 5;
-  optional bytes  target = 6;
-  optional string text = 7;
-}
