@@ -1,10 +1,10 @@
 CC	= g++
 
-CFILES  = main.cpp ../api/Network.cpp ../api/Thread.cpp
+CFILES  = main.cpp ../api/player.pb.cc ../api/Network.cpp ../api/Thread.cpp ../api/Core.cpp
 
 EXEC 	= main
 
-OBJS	= main.o Network.o Thread.o
+OBJS	= main.o Network.o Thread.o Core.o
 
 LINKER = -lGL -lXxf86vm -lXext -lX11 -lpthread
 

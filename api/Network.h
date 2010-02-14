@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/select.h>
+#include <poll.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -18,29 +20,39 @@
 //using namespace std;
 using namespace irr::core;
 class Network {
+
 public:
-  //  Network(int, int);
+  Network(void);
   //  Network(char *, int);
   ~Network();
   int Startup(int, int);
   int Startup(const char *, int);
   int Close(void);
+  int Close(int);
   void Wait(void);
   int getSize(void);
   int Receive(int, stringc *);
   int Receive(stringc *);
+  int ReceiveAll(list<stringc> *);
   int Send(int, stringc *);
   int SendAll(stringc *);
   int Send(stringc *);
+  int getIP(int, stringc *);
+  
  private:
   int server;
   stringc address;
   int fd;
   int port, max;
-  list<int> fdnew;
-  socklen_t size;
+  list<int> remoteFD;
+  list<stringc> remoteIP;
+
   struct hostent *he;
   struct sockaddr_in addr;
+  struct pollfd *ufds;
+  struct timeval tv;
+  fd_set readfds;
+
   ThNetwork NetworkThread;
 };
 
