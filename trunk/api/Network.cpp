@@ -1,25 +1,16 @@
 #include "Network.h"
 
-/*template<class T, void(T::*mem_fn)()> void* thunk(void* p) {
-(static_cast<T*>(p)->*mem_fn)();
-return 0;
-}*/
-
- /*Network::Network(int p, int m) : port(p), max(m) {
-  server = 1;
-  }*/
-/*
-Network::Network(char *a, int p) : port(p), max(0) {
-  address = a;
-  server = 0;
-  }*/
+Network::Network(void) {
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+}
 
 Network::~Network() {			       
-  list<int>::Iterator it = fdnew.begin();
+  list<int>::Iterator it = remoteFD.begin();
   
-  for(int i=0; i<fdnew.getSize(); i++) {
-    it+=i;
+  for(int i=0; i<remoteFD.getSize(); i++) {
     close(*it);
+    it++;
   }
   close(fd);
 }
@@ -44,6 +35,7 @@ int Network::Startup(int p, int m) {
   listen(fd, max);
   NetworkThread.Start(this);
 }
+
 int Network::Startup(const char *a, int p) {
   address = a;
   port = p;
@@ -64,46 +56,63 @@ int Network::Startup(const char *a, int p) {
 }
 
 int Network::Close(void) {
-  list<int>::Iterator it = fdnew.begin();
+  list<int>::Iterator it = remoteFD.begin();
   
-  for(int i=0; i<fdnew.getSize(); i++) {
+  for(int i=0; i<remoteFD.getSize(); i++) {
     it+=i;
     close(*it);
   }
   close(fd);
 }
 
+int Network::Close(int id) {
+  list<int>::Iterator it = remoteFD.begin();
+  it+=id;
+  close(*it);
+  remoteFD.erase(it);
+  
+  list<stringc>::Iterator ip = remoteIP.begin();
+  ip += id;
+  remoteIP.erase(ip);
+  
+  std::cout << "CLOSE: " << id << std::endl;
+}
+
 void Network::Wait(void) {
   while(fd) {
+    socklen_t size;
     int fdtmp;
-    std::cout << "Funcionando! " << max << " " << port;
+    char iptmp[16];
+    //    std::cout << "Funcionando! " << max << " " << port;
     
-    while(((fdtmp = accept(fd, (struct sockaddr *)&addr,&size)))<0)usleep(1);
-    
-    fdnew.push_back(fdtmp);
+    while((((fdtmp = accept(fd, (struct sockaddr *)&addr,&size)))<0)||(remoteFD.getSize()>=max))usleep(1);
+    inet_ntop(addr.sin_family, &addr.sin_addr, iptmp, INET_ADDRSTRLEN);
+    remoteIP.push_back(iptmp);
+    std::cout << iptmp << " " << fdtmp << " conectado.\n";
+    remoteFD.push_back(fdtmp);
   }
 }
 
 int Network::getSize(void) {
-  return fdnew.getSize();
+  return remoteFD.getSize();
 }
 
 
 int Network::Receive(int id, stringc *buffer) {
-  list<int>::Iterator p = fdnew.begin();
-  p+=id;
+  list<int>::Iterator fp = remoteFD.begin();
+  fp+=id;
   char *btmp;
   int total, received, left;
   uint16_t bytes_nbo;
 
-  recv(*p, &bytes_nbo, 2, 0);
+  recv(*fp, &bytes_nbo, 2, 0);
   total = ntohs(bytes_nbo);
   std::cout << std::endl << total << std::endl;
   left = total;
   
   while(left > 0) {
     btmp = new char[left+1];
-    received = recv(*p, btmp, left, NULL);
+    received = recv(*fp, btmp, left, NULL);
     btmp[left] = '\0';
     buffer->append(btmp);
     delete [] btmp;
@@ -137,11 +146,74 @@ int Network::Receive(stringc *buffer) {
 
 }
 
+int Network::ReceiveAll(list<stringc> *buffer) {
+  if(!remoteFD.getSize())
+    return -1;
+  char *btmp;
+  int total, received, left, rv;
+  uint16_t bytes_nbo;  
+  
+  buffer->clear();  
+    //  list<stringc>::Iterator sp = buffer->begin();
+  
+  
+  ufds = new struct pollfd[remoteFD.getSize()];
+
+  list<int>::Iterator fp = remoteFD.begin();
+  //  std::cout << *fp << *(fp+1) << *(fp+2);
+
+  for(int i=0; i<remoteFD.getSize(); i++) {
+    buffer->push_back("aaaaaaa");
+    ufds[i].fd = *fp;
+    ufds[i].events = POLLIN | POLLHUP | POLLERR;
+    fp++;
+  }
+  
+  rv = poll(ufds, remoteFD.getSize(), 0);
+  std::cout << "RV: " << rv << std::endl;
+  if(rv<1)
+    return rv;
+  
+  fp = remoteFD.begin(); 
+  list<stringc>::Iterator sp = buffer->begin();
+  for(int i=0; i<remoteFD.getSize(); i++) {
+    
+    if(ufds[i].revents & POLLIN) {    
+      
+      if(!recv(*fp, &bytes_nbo, sizeof(uint16_t), NULL))
+	{
+	  std::cout << "CLOSE!!!!!" << std::endl;
+	  this->Close(i);
+	  i--;
+	  continue;
+	}
+      total = ntohs(bytes_nbo);
+	std::cout << "FP: " << *fp << std::endl << "TOTAL: " << total << std::endl << "Buffer: " << sp->c_str() << std::endl;
+	left = total;
+	while(left > 0) {
+	  btmp = new char[left+1];
+	  received = recv(*fp, btmp, left, NULL);
+	  btmp[left] = '\0';
+	  *sp = btmp;
+	  delete [] btmp;
+	  left -= received;
+	  std::cout << std::endl << received << std::endl;
+	}
+      }
+      sp++;
+      fp++;
+    }
+    
+    
+  delete [] ufds;
+}
+
+
 int Network::Send(int id, stringc *buffer) {
   uint16_t bytes_nbo;
   int left, bytes;
   bytes_nbo = htons(buffer->size());
-  list<int>::Iterator p = fdnew.begin();
+  list<int>::Iterator p = remoteFD.begin();
   p+=id;
   
   if(send(*p, &bytes_nbo, 2, NULL) != 2)
@@ -157,14 +229,14 @@ int Network::SendAll(stringc *buffer) {
   uint16_t bytes_nbo;
   int left, bytes;
   bytes_nbo = htons(buffer->size());
-  list<int>::Iterator p = fdnew.begin();
+  list<int>::Iterator fp = remoteFD.begin();
   //  p += 0;
-  for(int i=0; i<fdnew.getSize(); p+=++i) {
-    if(send(*p, &bytes_nbo, 2, NULL) != 2)
+  for(int i=0; i<remoteFD.getSize(); fp+=++i) {
+    if(send(*fp, &bytes_nbo, 2, NULL) != 2)
       std::cerr << "send()_nbo";
     left = buffer->size();
     while(left>0) {
-      bytes = send(*p, buffer->c_str()+(buffer->size()-left), left, NULL);
+      bytes = send(*fp, buffer->c_str()+(buffer->size()-left), left, NULL);
       left -= bytes;
     }
   }
@@ -174,7 +246,7 @@ int Network::Send(stringc *buffer) {
   uint16_t bytes_nbo;
   int left, bytes;
   bytes_nbo = htons(buffer->size());
-  if(send(fd, &bytes_nbo, 2, NULL) != 2)
+  if(send(fd, &bytes_nbo, sizeof(uint16_t), NULL) != 2)
     std::cerr << "send()_nbo";
   left = buffer->size();
   while(left>0) {
@@ -183,4 +255,8 @@ int Network::Send(stringc *buffer) {
   }
 }
 
-
+int Network::getIP(int id, stringc *buffer) {
+  list<stringc>::Iterator sp = remoteIP.begin();
+  sp+=id;
+  *buffer = *sp;
+}
